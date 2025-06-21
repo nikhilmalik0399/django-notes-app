@@ -1,38 +1,45 @@
 @Library('Shared')_
-pipeline{
-    agent { label 'Nikhil'}
-    
-    stages{
-        stage("hello"){
-            script{
-                hello()
-            }
-        }
-        stage("Code clone"){
-            steps{
-                sh "whoami"
-                script{
-                     clone("https://github.com/nikhilmalik0399/django-notes-app.git", "main")
+pipeline {
+    agent { label 'Nikhil' }
+
+    stages {
+        stage("hello") {
+            steps {
+                script {
+                    hello()
                 }
             }
         }
-        stage("Code Build"){
-            steps{
-            docker build -t notes-app:latest .
+
+        stage("Code clone") {
+            steps {
+                sh "whoami"
+                script {
+                    clone("https://github.com/nikhilmalik0399/django-notes-app.git", "main")
+                }
             }
         }
-        stage("Push to DockerHub"){
-            steps{ 
-               withCredentials(usernamePassword[credentialsId: 'dockerCred', passwordVariable:'dockerhubPass', usernameVariable:'dockerHubUser']){
-                   docker login -u ${env.dockerHubUser} -p ${env.dockerhubPass}
-                   sh " docker push ${dockerHubUser}/notes-app:latest
+
+        stage("Code Build") {
+            steps {
+                sh 'docker build -t notes-app:latest .'
             }
         }
-        stage("Deploy"){
-            steps{
-               sh "docker compose up -d"
+
+        stage("Push to DockerHub") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerCred', usernameVariable: 'dockerHubUser', passwordVariable: 'dockerhubPass')]) {
+                    sh 'docker login -u $dockerHubUser -p $dockerhubPass'
+                    sh 'docker push $dockerHubUser/notes-app:latest'
+                }
             }
         }
-        
+
+        stage("Deploy") {
+            steps {
+                sh "docker compose up -d"
+            }
+        }
     }
 }
+
