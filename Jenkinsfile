@@ -1,6 +1,6 @@
 @Library('Shared')_
 pipeline {
-    agent { label 'Nikhil' }
+    agent { label 'nikhil' }
 
     stages {
         stage("hello") {
